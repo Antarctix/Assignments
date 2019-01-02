@@ -1,0 +1,291 @@
+/*
+ * Author: Nathan Cheung
+ * Class: ICS3U
+ * 
+ * Program: Assignment 6
+ * Input: Selection of various casino games
+ * Processing: Calculates and runs games, checks menu options, etc. Calculates balance for player.
+ * Output: Displays win/lose, multipliers, menu decisions, total winnings/losses
+ */
+
+import hsa.*;
+import hsa.Console;
+import java.awt.Color;
+import java.io.File;
+import java.text.DecimalFormat;
+import java.util.Scanner;
+import java.util.Random;
+import javax.swing.JOptionPane;
+
+/**
+ *
+ * @author 335561676
+ */
+public class VirtualCasino {
+
+    public static void main(String[] args) {
+        Console c = new Console();
+        skillTest(c);
+        //Occurs if skill test was not complete
+        c.println("Sorry. You are inadequate.");
+        try {
+            //Pause for 1 seconds
+            Thread.sleep(1000);
+            System.exit(0);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void skillTest(Console c) {
+        c.clear();
+        c.println("Please solve this skill-testing question:");
+        //Prints a skill-testing question
+        Random numRand = new Random();
+        int num1 = numRand.nextInt(9) + 1;
+        int num2 = numRand.nextInt(9) + 1;
+        int num3 = numRand.nextInt(9) + 1;
+        int num4 = numRand.nextInt(9) + 1;
+        int num5 = numRand.nextInt(9) + 1;
+
+        c.println(num1 + " + " + num2 + " - " + num3 + " - " + num4 + " + " + num5);
+        int rAnswer = num1 + num2 - num3 - num4 + num5;
+        Double answer = 0.0;
+        //Gives 3 tries for the user
+        for (int i = 0; i < 3; i++) {
+            try {
+                answer = Double.parseDouble(JOptionPane.showInputDialog("Enter your boolean that is an answer: "));
+            } catch (Exception e) {
+
+            }
+            if (answer == rAnswer) {
+                welcome(c);
+                break;
+                //Hidden Easter Egg
+            } else if (answer == 9001) {
+                c.println("ITS OVER 9000!!!!!!!!!!!!!");
+                c.println("Please Try Again... Senpai.");
+            } else {
+                c.println("Please Try Again.");
+            }
+        }
+
+    }
+
+    //Balance in Method
+    public static double balance(Console c, String name) {
+       double balance = 1000; //Declares input of text files
+        TextInputFile tif = new TextInputFile("balance.txt");
+        
+        //Gets name and the corresponding money that they have
+        if (tif.eof()) {
+            balance = 1000;
+        } else {
+            String tName[] = new String[1000];
+            while(!tif.eof()){
+                String line = tif.readLine();     
+                String[] parts = line.split("-");
+                if(parts[0].equals(name)){
+                    balance = Double.parseDouble(parts[1]);
+                    break;
+                }
+            }
+        }
+        return balance;
+    }
+
+    //Balance out Method
+    public static void balOut(Console c, double balance, String name) {
+        //Declares input and output of text files
+        TextOutputFile tof = new TextOutputFile("balance.txt");
+
+        //Saves amount of money they have
+        tof.println(name + "-" + balance);
+    }
+
+    //Welcome page
+    public static void welcome(Console c) {
+        c.clear();
+        c.println("Welcome to Casino Unleashed");
+        c.println("What is your name?");
+        String name = c.readString();
+
+        try {
+            //Pause for 2 seconds
+            Thread.sleep(2000);
+            intro(c);
+            menu(c, name);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //Intro Page
+    public static void intro(Console c) {
+        c.clear();
+        for (int i = 0; i <= 10000; i++) {
+            c.print("*");
+        }
+        c.println("Press START");
+        c.getChar();
+    }
+
+    //Menu Selection
+    public static void menu(Console c, String name) {
+        c.clear();
+        c.println("CASINO UNLEASHED \nWelcome: " + name);
+        c.println("1. Craps");
+        c.println("2. Roulette");
+        c.println("3. Cash out");
+        c.println("Click a number to access the option");
+        char mainMenu = c.getChar();
+
+        switch (mainMenu) { //Switch which helps in selecting which option to run. 
+            case '1':
+                craps(c, name);
+                menu(c, name);
+                break;
+            case '2':
+                roulette(c);
+                menu(c, name);
+                break;
+            case '3':
+                cashOut(c);
+                menu(c, name);
+                break;
+            default:
+                c.println("Invalid Option. Try Again");
+                c.getChar();
+                menu(c, name);
+                break;
+        }
+    }
+
+    //Craps Method
+    public static void craps(Console c, String name) {
+        int d1 = 0, d2 = 0;
+        c.clear();
+        c.println("Welcome to Craps at Casino Unleashed");
+        double balance = balance(c, name);
+        password(c, name);
+
+        //Pauses for .5 seconds
+        try {
+            Thread.sleep(500);
+
+                //Craps Function
+            //Shows current balance
+            c.println("Balance: " + balance);
+            c.println("");
+            c.println("");
+            c.println("");
+            c.println("");
+
+            //Asks wager. If wager is larger than the current balance, it will continue asking for a proper wager
+            c.println("What is your wager?");
+            double wager = c.readDouble();
+            while (wager > balance) {
+                c.println("Sorry. You don't have this much money. Please enter a proper value.");
+                wager = c.readDouble();
+            }
+            c.clear();
+
+            //Asks for a number from user
+            c.println("Please select a number between 3 and 12");
+            int crapSelect = c.readInt();
+            c.println("Your Number: " + crapSelect);
+
+            //Rolls dice
+            int diceTotal = VirtualCasino.reRoll(d1, d2);
+
+            //Rerolls any SnakeEyes
+            if (diceTotal == 2) {
+                VirtualCasino.reRoll(d1, d2);
+                craps(c, name);
+
+                //Winner occurs and changes balance accordingly
+            } else if (diceTotal == crapSelect) {
+                c.println("Rolled a " + diceTotal);
+                c.println("Winner!!!!");
+                balance += wager;
+                c.println("");
+                c.println("Balance: " + balance);
+                balOut(c, balance, name);
+
+                //Loss occurs and changes balance accordingly
+            } else {
+                //Shows Current Balance and Notes the Loss
+                c.println("Rolled a " + diceTotal);
+                c.println("You have lost");
+                balance -= wager;
+                c.println("");
+                c.println("Balance: " + balance);
+                balOut(c, balance, name);
+            }
+            
+            playAgain(c, name);
+
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //Password Method
+    public static void password(Console c, String name){
+        
+    }
+       
+    //Rolling Method
+    public static int reRoll(int d1, int d2) {
+        Random rand = new Random();
+        d1 = rand.nextInt(6) + 1;
+        d2 = rand.nextInt(6) + 1;
+        return d1 + d2;
+    }
+
+    //Roulette Method
+    public static void roulette(Console c) {
+        c.println("Welcome to the Roulette Games at Casino Unleashed");
+
+    }
+
+    //Cash Out Method
+    public static void cashOut(Console c) {
+        c.clear();
+        c.println("Thank you for playing at Casino Unleashed");
+
+        try {
+            c.print("Exiting.");
+            for (int i = 0; i <= 1500; i++) {
+                c.print(".............");
+            }
+            //Pause for 1 seconds
+            Thread.sleep(1000);
+            System.exit(0);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    //Play again or menu Method for Craps
+    public static void playAgain(Console c, String name) {
+        c.println("1. Play again? or 2. Exit to Menu");
+        char select = c.getChar();
+
+        switch (select) {
+            case '1':
+                craps(c, name);
+                break;
+            case '2':
+                menu(c, name);
+                break;
+            default:
+                c.println("Not an option. Try again.");
+                playAgain(c, name);
+                break;
+        }
+    }
+
+}
