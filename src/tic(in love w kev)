@@ -1,0 +1,244 @@
+/*
+ * Program: Arrays Tic Tac Toe
+ * Input: Row and Column
+ * Processing: Calculates location on the board and who's turn it is
+ * Output: Prints X or O based on player.
+ */
+
+import java.util.Scanner;
+
+/**
+ *
+ * @author 335561676
+ */
+
+public class ticTacToe {
+
+    private Scanner in = new Scanner(System.in);
+    private char[][] board = new char[4][4];
+    private boolean turnX = true;
+    private boolean winner = false;
+    private boolean tie = false;
+    private int turnCounter = 1;
+    private boolean xWin, oWin;
+    private int egg = 0;
+
+    public ticTacToe() {
+        //Sets the cells on the game board to spaces
+        char ch = 1;
+        for (int i = 1; i < 4; i++) {
+            for (int j = 1; j < 4; j++) {
+                board[i][j] = ch;
+            }
+        }
+    }
+
+    //Method for setting characters within the board
+    private void disRow(int row) {
+        System.out.println(" | " + board[row][1] + " | " + board[row][2] + " | " + board[row][3] + " | ");
+    }
+
+    //Displays the new board each time it's called
+    private void disBoard() {
+
+        disRow(1);
+        System.out.println("---------------");
+        disRow(2);
+        System.out.println("---------------");
+        disRow(3);
+        System.out.println();
+
+        //Prints turn number
+        System.out.println("Turn: " + turnCounter);
+    }
+
+    //Allows selection of X and O placements
+    private void disMenu() {
+        //Dictates whos turn it is
+        if (turnX == true) {
+            System.out.println("X's Turn!");
+        } else {
+            System.out.println("O's Turn!");
+        }
+        //Asks for input of row and column
+        System.out.print("Row: ");
+        int row = in.nextInt();
+        System.out.print("Column: ");
+        int column = in.nextInt();
+
+        //Error check. If spot is taken
+        if (board[row][column] == 'X' || board[row][column] == 'O') {
+            System.out.println("Please choose another row and column. This spot is taken.");
+            disMenu();
+        } else {
+            //Runs for either player. Turn switching mechanism
+            if (turnX == true) {
+                board[row][column] = 'X';
+                turnCounter++;
+                disBoard();
+            } else {
+                board[row][column] = 'O';
+                turnCounter++;
+                disBoard();
+            }
+            turnX = !turnX;
+        }
+    }
+
+    //Checks for a winner
+    public boolean winnerCheck(char[][] board) {
+        return horizonWin(board) || verticalWin(board) || diagonalWin(board);
+    }
+
+    //Checks wins on the horizontal and returns true if it is a successful win
+    private boolean horizonWin(char[][] board) {
+        boolean horWin = false;
+        //Checks all 3 rows for a win
+        for (int row = 0; row < board.length; row++) {
+            if (board[row][1] == 'X' && board[row][2] == 'X' && board[row][3] == 'X') {
+                xWin = true;
+                horWin = true;
+            } else if (board[row][1] == 'O' && board[row][2] == 'O' && board[row][3] == 'O') {
+                oWin = true;
+                horWin = true;
+            }
+        }
+        return horWin;
+    }
+
+    //Checks wins on the vertical and returns true if it is a successful win
+    private boolean verticalWin(char[][] board) {
+        boolean vertWin = false;
+        //Checks the 3 vertical columns for any wins
+        for (int column = 0; column < board.length; column++) {
+            if (board[1][column] == 'X' && board[2][column] == 'X' && board[3][column] == 'X') {
+                xWin = true;
+                vertWin = true;
+            } else if (board[1][column] == 'O' && board[2][column] == 'O' && board[3][column] == 'O') {
+                oWin = true;
+                vertWin = true;
+            }
+        }
+        return vertWin;
+    }
+
+    //Checks wins on the diagonal and returns true if it is a successful win
+    private boolean diagonalWin(char[][] board) {
+        boolean dWin = false;
+
+        //Checks the two diagonal solutions by checking each individual cell
+        if (board[1][1] == 'X' && board[2][2] == 'X' && board[3][3] == 'X') {
+            xWin = true;
+            dWin = true;
+        } else if (board[1][1] == 'O' && board[2][2] == 'O' && board[3][3] == 'O') {
+            oWin = true;
+            dWin = true;
+        } else if (board[3][1] == 'X' && board[2][2] == 'X' && board[1][3] == 'X') {
+            xWin = true;
+            dWin = true;
+        } else if (board[3][1] == 'O' && board[2][2] == 'O' && board[1][3] == 'O') {
+            oWin = true;
+            dWin = true;
+        }
+        return dWin;
+    }
+
+    //Checks for ties by running through each plot and deciding if it contains an item or not
+    private boolean tieCheck(char[][] board) {
+        for (int i = 1; i < 4; i++) {
+            for (int j = 1; j < 4; j++) {
+                if (board[i][j] == 1) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    //Runs game functions. Also checks if there's a winner
+    public void play() {
+        disBoard();
+        while (winner == false) {
+
+            //Runs the game functions, winner check, and tie checker
+            disMenu();
+            winnerCheck(board);
+            tieCheck(board);
+
+            //Stops game when there is a winner/board is full
+            if (winnerCheck(board) == true) {
+                winner = true;
+                endGame();
+                replay();
+            } else if (tieCheck(board) == true) {
+                //Stops game when theres a tie
+                winner = true;
+                tie = true;
+                endGame();
+                replay();
+            }
+        }
+    }
+
+    public void endGame() {
+
+        //Displays board one more time with turn counter
+        System.out.println("Final Board:");
+        disBoard();
+        System.out.println("Turns Taken: " + turnCounter);
+
+        //Displays winner or if draw
+        if (xWin == true) {
+            System.out.println("X wins!");
+        } else if (oWin == true) {
+            System.out.println("O wins!");
+        } else if (tie == true) {
+            System.out.println("No one wins! You're all losers!");
+        }
+
+    }
+
+    //Allows user to replay the game
+    public void replay() {
+
+        //Asks if user wants to continue
+        System.out.println("Exit or Continue?");
+
+        //Allows input of an exit or continue section
+        String select = in.nextLine();
+        while (!select.equalsIgnoreCase("Exit") && !select.equalsIgnoreCase("Continue")) {
+            select = in.nextLine();
+
+            //Receives input and decides to exit or continue program
+            if (select.equalsIgnoreCase("Exit") || select.equalsIgnoreCase("e")) {
+                System.exit(0);
+            } else if (select.equalsIgnoreCase("Continue") || select.equalsIgnoreCase("c")) {
+                ticTacToe game = new ticTacToe();
+                game.play();
+            } else {
+
+                //If entered key is not a valid option
+                System.out.println("Not a valid option. Try again.");
+
+                //Easter egg ;) Just some fun for the player
+                egg++;
+                if (egg == 3) {
+                    System.out.println("Buddy. I've told you 3 times. Stop annoying me.");
+                } else if (egg == 5) {
+                    System.out.println("That's it. You're really getting on my nerves bud.");
+                } else if (egg == 7) {
+                    System.out.println("Fine. If you're still here. You've probably hacked the system like Daniel did..... Thanks a lot. -Nate");
+                    System.exit(0);
+                }
+            }
+        }
+    }
+
+    //Runs game
+
+    public static void main(String[] args) {
+        ticTacToe game = new ticTacToe();
+        game.play();
+    }
+}
